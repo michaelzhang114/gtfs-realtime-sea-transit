@@ -20,3 +20,4 @@ To make the time est logic better:
 3. From the shape ID, get the coordinates of all the stops
 
 
+ss

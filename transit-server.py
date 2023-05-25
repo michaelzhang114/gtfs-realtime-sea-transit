@@ -24,6 +24,6 @@ def my_api():
     return jsonify(output_json)
 
 if __name__ == '__main__':
-    app.run('192.168.86.41', port=4999)
+    app.run('192.168.86.42', port=4999)
 
 #192.168.86.41:4999/api?route_id=100252&stop_id=6190
