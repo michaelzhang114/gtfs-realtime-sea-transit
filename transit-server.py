@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from gtfs import get_gtfs_feed_static, get_gtfs_rt_my_stop_updates
 import json
 
+FLASK_SERVER_IP = '192.168.86.42'
+FLASK_SERVER_PORT = 4999
 
 app = Flask(__name__)
 
@@ -24,6 +26,6 @@ def my_api():
     return jsonify(output_json)
 
 if __name__ == '__main__':
-    app.run('192.168.86.42', port=4999)
+    app.run(FLASK_SERVER_IP, port=FLASK_SERVER_PORT)
 
 #192.168.86.41:4999/api?route_id=100252&stop_id=6190

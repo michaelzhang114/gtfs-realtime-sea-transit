@@ -1,23 +1,50 @@
 # gtfs-realtime-sea-transit
 
-## Description
-
 ## Usage
+The gunicorn/Flask server hosts the REST API endpoint: 
+```
+http://FLASK_SERVER_IP:FLASK_SERVER_PORT/api?route_id=<ID of your route>&stop_id=<ID of your stop>
+```
 
-## Todo
-1. UI input: Bus route name and direction (visual), and pick the stop -> backend: route_id, direction_id, stop_id
+## transit-server.py
 
-To make the time est logic better:
-- need to get direction_id from route_id + stop_id
-- from trip_id, get list of stop_id
+Modify `FLASK_SERVER_IP` and `FLASK_SERVER_PORT` for your environment. This is where the Flask server will run. In my setup, IP == the LAN address of my RPI.
 
+## Keep Flask Server running using Gunicorn
 
+1. **Install Gunicorn:**
 
+    ```
+    sudo apt-get update
+    sudo apt-get install gunicorn
+    ```
 
+2. **Create a Gunicorn configuration file:**
 
-1. Get all trips from static gtfs trips.txt
-2. Given a trip ID, get the shape ID (static trips.txt)
-3. From the shape ID, get the coordinates of all the stops
+    - Create a new file, e.g., `gunicorn_config.py`, to define the Gunicorn settings.
+    - Customize the configuration based on your requirements. For example:
 
+    ```python
+    bind = '0.0.0.0:8000'  # Replace with the desired host and port
+    workers = 4  # Number of worker processes
+    threads = 2  # Number of worker threads per process
+    ```
 
-ss
+3. **Start Gunicorn server and test your API**
+
+    ```
+    gunicorn -c gunicorn_config.py transit-server.py:app
+    ```
+
+4. **Keep server running**
+    - By default, Gunicorn will run continuously until you stop it manually.
+    - If you're running the server on a remote machine or a cloud server, you can use tools like nohup or screen to keep the process running even after you close the terminal session. For example:
+
+    ```
+    nohup gunicorn -c gunicorn_config.py transit-server:app &
+    ```
+
+5. **Terminate Gunicorn process**
+```
+pkill gunicorn
+```
