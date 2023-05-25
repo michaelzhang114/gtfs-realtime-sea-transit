@@ -1,6 +1,7 @@
 from google.transit import gtfs_realtime_pb2
 import requests, zipfile, io
 import datetime
+import json
 
 def unix_timestamp_to_relative_time(timestamp):
     # Convert Unix timestamp to datetime object
@@ -19,6 +20,18 @@ def unix_timestamp_to_relative_time(timestamp):
         return "just now"
     else:
         return f"{minutes} minutes ago"
+
+def unix_to_rel_min(timestamp):
+  # Convert Unix timestamp to datetime object
+  dt = datetime.datetime.fromtimestamp(timestamp)
+
+  # Calculate the time difference relative to the current moment
+  current_time = datetime.datetime.now()
+  time_difference = current_time - dt
+
+  # Determine the number of minutes
+  minutes = int(time_difference.total_seconds() / 60)
+  return minutes
 
 class Route:
   def __init__(self, route_id, agency_id, route_short_name, route_desc, route_url):
@@ -70,18 +83,62 @@ def get_gtfs_rt_my_stop_updates(route_id, stop_id):
   # print(feed)
   # print(feed.entity)
   print("Getting stop updates for route: {} and stop: {}".format(route_id, stop_id))
-
+  output_json = {
+    'transit_updates': []
+  }
+  out_arr = []
   for entity in feed.entity:
     if entity.trip_update.trip.route_id == route_id:
       for stop in entity.trip_update.stop_time_update:
+        update_json = {}
         if stop.stop_id == stop_id:
           print("Found a trip! ID: {} || This stop sequence of this stop is {}".format(entity.trip_update.trip.trip_id, stop.stop_sequence))
+          update_json['trip_id'] = entity.trip_update.trip.trip_id
+          
           curr_timestamp = stop.arrival.time
           delay = stop.arrival.delay
           relative_time = unix_timestamp_to_relative_time(curr_timestamp)
           rel_time_delay = unix_timestamp_to_relative_time(curr_timestamp + delay)
           print("Time: {} || With current delays: {}".format(relative_time, rel_time_delay))
+          
+          out_arr.append(curr_timestamp + delay)
+
+          update_json['time'] = relative_time
+          update_json['time_w_delay'] = rel_time_delay
+          output_json['transit_updates'].append(update_json)
   
+  out_arr.sort()
+  result = ""
+  if len(out_arr) == 0:
+    result += "I don't see any buses. Check again later."
+  elif len(out_arr) == 1:
+    result += "I only see one bus."
+  else:
+    result += "I see {} buses! ".format(len(out_arr))
+  
+  for i, unix_time in enumerate(out_arr):
+      if i == 0:
+        if len(out_arr) == 0:
+          result += "It "
+        else: 
+          result += "The first "
+        
+        if unix_to_rel_min(unix_time) > 0:
+          result += "came "
+        else:
+          result += "comes "
+      elif i == len(out_arr) - 1:
+        result += "and the last one I see comes "
+      else:
+        result += "the one after comes "
+      friendly = unix_timestamp_to_relative_time(unix_time)
+      result += f"{friendly}, "
+  result = result.rstrip('"')
+  result += "."
+
+  output_json['message'] = result
+  
+  return output_json
 def get_gtfs_rt_trips_from_route(route_id):
   list_of_trips = []
   feed = gtfs_realtime_pb2.FeedMessage()
@@ -130,8 +187,6 @@ def get_gtfs_rt_vehicles(route_id, stop_id):
       if not vehicle_had_gone:
         continue
       
-      
-
       my_vehicle = Vehicle(trip_id, direction_id, route_id, start_date, vehicle_id, position, timestamp, current_stop_sequence)
       list_of_vehicles.append(my_vehicle)
   return list_of_vehicles
@@ -198,10 +253,11 @@ get_gtfs_feed_static()
 #   print(v.__dict__)
 
 # Bus 62 
-get_gtfs_rt_my_stop_updates("100252", "6190")
-list_of_vehicles = get_gtfs_rt_vehicles("100252", "6190")
-for v in list_of_vehicles:
-  print(v.__dict__)
+json_str = json.dumps(get_gtfs_rt_my_stop_updates("100252", "6190"), indent=4)
+print(json_str)
+# list_of_vehicles = get_gtfs_rt_vehicles("100252", "6190")
+# for v in list_of_vehicles:
+#   print(v.__dict__)
 
 
 # list_of_stop_of_trip = get_stops_from_trip("599398763")
