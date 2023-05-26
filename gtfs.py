@@ -130,7 +130,7 @@ def get_gtfs_rt_my_stop_updates(route_id, stop_id):
 	
 	for i, unix_time in enumerate(out_arr):
 		if i == 0:
-			if len(out_arr) == 0:
+			if len(out_arr) <= 1:
 				result += "It "
 			else: 
 				result += "The first "
