@@ -3,6 +3,8 @@ import requests, zipfile, io
 import datetime
 import json
 
+gl_list_of_routes = []
+
 def unix_timestamp_to_relative_time(timestamp):
 	# Convert Unix timestamp to datetime object
 	dt = datetime.datetime.fromtimestamp(timestamp)
@@ -81,6 +83,15 @@ def get_gtfs_feed_static():
 	# check if resp is ok
 	z = zipfile.ZipFile(io.BytesIO(r.content))
 	z.extractall("gtfs-feed-king-county")
+	get_routes_from_gtfs_feed('gtfs-feed-king-county/routes.txt')
+
+
+def get_route_id_of_route_name(route_name):
+	for r in gl_list_of_routes:
+		if route_name.lower() == r.route_short_name.lower():
+			return r.route_id
+	return None
+
 		
 def get_gtfs_rt_my_stop_updates(route_id, stop_id):
 	feed = gtfs_realtime_pb2.FeedMessage()
@@ -210,17 +221,15 @@ def get_gtfs_rt_my_stop_updates(route_id, stop_id):
 #       list_of_vehicles.append(my_vehicle)
 #   return list_of_vehicles
 
-# def get_routes_from_gtfs_feed(routes_file_path):
-#   list_of_routes = []
-#   with open(routes_file_path, 'r') as file:
-#     for line_number, line in enumerate(file):
-#       if line_number == 0:
-#         continue  # Skip the first line
-#       current_line = line.split(",")
-#       current_route = Route(current_line[0], current_line[1], current_line[2], current_line[4], current_line[6])
-#       list_of_routes.append(current_route)
-#       # print("ID: {}, Name: {}, Desc: {}, URL: {}".format(current_route.route_id, current_route.route_short_name, current_route.route_desc, current_route.route_url))
-#   return list_of_routes
+def get_routes_from_gtfs_feed(routes_file_path):
+  with open(routes_file_path, 'r') as file:
+    for line_number, line in enumerate(file):
+      if line_number == 0:
+        continue  # Skip the first line
+      current_line = line.split(",")
+      current_route = Route(current_line[0], current_line[1], current_line[2].strip('"'), current_line[4], current_line[6])
+      gl_list_of_routes.append(current_route)
+      # print("ID: {}, Name: {}, Desc: {}, URL: {}".format(current_route.route_id, current_route.route_short_name, current_route.route_desc, current_route.route_url))
 
 # def get_stops_from_trip(trip_id):
 #   stop_times_path = 'gtfs-feed-king-county/stop_times.txt'
@@ -255,8 +264,8 @@ def get_gtfs_rt_my_stop_updates(route_id, stop_id):
 # MAIN CODE HERE  
 
 # Get the static gtfs feed, dump into folder
-# get_gtfs_feed_static()
-
+#get_gtfs_feed_static()
+#print(get_route_id_of_route_name("south lake union streetcar"))
 # list_of_routes = get_routes_from_gtfs_feed('gtfs-feed-king-county/routes.txt')
 
 # Bus 8 Seattle Center
