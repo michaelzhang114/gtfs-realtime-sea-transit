@@ -296,55 +296,18 @@ def get_stop_name_position_from_id(stop_id):
 	return None
 
 # MAIN CODE HERE  
-
-# Get the static gtfs feed, dump into folder
-get_gtfs_feed_static()
-route_name = input("What's the route?  ")
-my_route_id = get_route_id_of_route_name(route_name)
-directions = get_directions_from_route_id(my_route_id)
-print("Select the direction")
-for direction_id, headsign in directions.items():
-    print(f"Direction ID: {direction_id}, Headsign: {headsign}")
-my_dir_id = input("What's the direction ID?  ")    
-my_trips = get_trip_ids_from_route_direction(my_route_id, my_dir_id)
-my_stops = get_stops_from_trip(my_trips[0])
-for stop in my_stops:
-	print(f"Stop ID: {stop['stop_id']}, Stop Name: {stop['stop_name']}, Latitude: {stop['stop_pos_lat']}, Longitude: {stop['stop_pos_lon']}")
-my_stop_id = input("What's the stop ID of your stop?  ")
-print(f"Looking for route_id: {my_route_id} and stop_id: {my_stop_id}")
-
-get_gtfs_rt_my_stop_updates(my_route_id, my_stop_id)
-
-# Bus 8 Seattle Center
-# get_gtfs_rt_my_stop_updates("100275", "2291")
-# list_of_vehicles = get_gtfs_rt_vehicles("100275", "2291")
-# for v in list_of_vehicles:
-#   print(v.__dict__)
-
-# Bus 8 Mount Baker
-# get_gtfs_rt_my_stop_updates("100275", "2255")
-# list_of_vehicles = get_gtfs_rt_vehicles("100275", "2255")
-# for v in list_of_vehicles:
-#   print(v.__dict__)
-
-# Bus 62 
-#json_str = json.dumps(get_gtfs_rt_my_stop_updates("100252", "6190"), indent=4)
-#print(json_str)
-# list_of_vehicles = get_gtfs_rt_vehicles("100252", "6190")
-# for v in list_of_vehicles:
-#   print(v.__dict__)
-
-
-# list_of_stop_of_trip = get_stops_from_trip("599398763")
-
-
-
-# for t in list_of_trips:
-#   print(t.__dict__)
-
-# bus 8's route ID is 100275; direction ID is 1 towards cap hill
-# bus 8 towards cap hill one trip ID: 605082613
-# my stop is "Denny Way & Westlake" and the stop ID is 2255 (going to cap hill) & 2291
-
-# bus 62; route 100252; 
-# 7th ave & blanchard stop: 6190 & 6220
+#get_gtfs_feed_static()
+#route_name = input("What's the route?  ")
+#my_route_id = get_route_id_of_route_name(route_name)
+#directions = get_directions_from_route_id(my_route_id)
+#print("Select the direction")
+#for direction_id, headsign in directions.items():
+#    print(f"Direction ID: {direction_id}, Headsign: {headsign}")
+#my_dir_id = input("What's the direction ID?  ")    
+#my_trips = get_trip_ids_from_route_direction(my_route_id, my_dir_id)
+#my_stops = get_stops_from_trip(my_trips[0])
+#for stop in my_stops:
+#	print(f"Stop ID: {stop['stop_id']}, Stop Name: {stop['stop_name']}, Latitude: {stop['stop_pos_lat']}, Longitude: {stop['stop_pos_lon']}")
+#my_stop_id = input("What's the stop ID of your stop?  ")
+#print(f"Looking for route_id: {my_route_id} and stop_id: {my_stop_id}")
+#get_gtfs_rt_my_stop_updates(my_route_id, my_stop_id)
