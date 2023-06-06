@@ -1,6 +1,6 @@
 from google.transit import gtfs_realtime_pb2
 import requests, zipfile, io
-import datetime
+import datetime, csv
 import json
 
 gl_list_of_routes = []
@@ -87,6 +87,9 @@ def get_gtfs_feed_static():
 
 
 def get_route_id_of_route_name(route_name):
+	if isinstance(route_name, int):
+		route_name = str(route_name)
+	
 	for r in gl_list_of_routes:
 		if route_name.lower() == r.route_short_name.lower():
 			return r.route_id
@@ -231,42 +234,86 @@ def get_routes_from_gtfs_feed(routes_file_path):
       gl_list_of_routes.append(current_route)
       # print("ID: {}, Name: {}, Desc: {}, URL: {}".format(current_route.route_id, current_route.route_short_name, current_route.route_desc, current_route.route_url))
 
-# def get_stops_from_trip(trip_id):
-#   stop_times_path = 'gtfs-feed-king-county/stop_times.txt'
-#   list_of_stops = []
-#   with open(stop_times_path, 'r') as file:
-#     for line_number, line in enumerate(file):
-#       if line_number == 0:
-#         continue  # Skip the first line
-#       current_line = line.split(",")
-#       if current_line[0] == trip_id:
-#         # print(current_line)
-#         curr_stop_id = current_line[3]
-#         stop_n, stop_pos = get_stop_name_position_from_id(curr_stop_id)
-#         current_stop = Stop(current_line[0], curr_stop_id, current_line[3], current_line[4], current_line[8], stop_n, stop_pos)
-#         list_of_stops.append(current_stop)
-#         #print("Trip ID: {}, Stop ID: {}, Stop Seq: {}, Dist: {}, Name: {}, Pos: {}".format(current_stop.trip_id, current_stop.stop_id, current_stop.stop_sequence, current_stop.shape_dist_traveled, current_stop.stop_name, current_stop.stop_position))
-#   return list_of_stops
+def get_directions_from_route_id(route_id):
+	trips_file = 'gtfs-feed-king-county/trips.txt'
+	with open(trips_file, 'r', encoding='utf-8-sig') as trips_csv:
+		trips_reader = csv.DictReader(trips_csv)
+		directions = {}
 
-# def get_stop_name_position_from_id(stop_id):
-#   stops_path = 'gtfs-feed-king-county/stops.txt'
-#   list_of_stops = []
-#   with open(stops_path, 'r') as file:
-#     for line_number, line in enumerate(file):
-#       if line_number == 0:
-#         continue  # Skip the first line
-#       current_line = line.split(",")
-#       if current_line[0] == stop_id:
-#         stop_name = current_line[2]
-#         stop_position = (float(current_line[4]), float(current_line[5]))
-#   return (stop_name, stop_position)
+		for trip in trips_reader:
+			if trip['route_id'] == route_id:
+				direction_id = trip['direction_id']
+				headsign = trip['trip_headsign']
+
+				if direction_id not in directions:
+					directions[direction_id] = headsign
+
+				if len(directions) == 2:
+					break
+	return directions
+
+def get_trip_ids_from_route_direction(route_id, direction_id):
+	if isinstance(direction_id, int):
+		direction_id = str(direction_id)
+	trips_file = 'gtfs-feed-king-county/trips.txt'
+	with open(trips_file, 'r', encoding='utf-8-sig') as trips_csv:
+		trips_reader = csv.DictReader(trips_csv)
+		list_of_trips = []
+
+		for t in trips_reader:
+			if t['route_id'] == route_id and t['direction_id'] == direction_id:
+				list_of_trips.append(t['trip_id'])
+				return list_of_trips # Returns the first trip found
+	return list_of_trips
+
+def get_stops_from_trip(trip_id):
+	if isinstance(trip_id, int):
+		trip_id = str(trip_id)
+	
+	stops = []
+	stop_times_file = 'gtfs-feed-king-county/stop_times.txt'
+	with open(stop_times_file, 'r', encoding='utf-8-sig') as stop_times_csv:
+		stop_times_reader = csv.DictReader(stop_times_csv)
+		for stop_time in stop_times_reader:
+			if stop_time['trip_id'] == trip_id:
+				stop_id = stop_time['stop_id']
+				stop = get_stop_name_position_from_id(stop_id)
+				stops.append(stop)
+	return stops
+
+def get_stop_name_position_from_id(stop_id):
+	stops_path = 'gtfs-feed-king-county/stops.txt'
+	with open(stops_path, 'r') as file:
+		for line_number, line in enumerate(file):
+			if line_number == 0:
+				continue  # Skip the first line
+			current_line = line.split(",")
+			if current_line[0] == stop_id:
+				stop_name = current_line[2]
+				stop_position = (float(current_line[4]), float(current_line[5]))
+				stop = {'stop_id': stop_id, 'stop_name': stop_name, 'stop_pos_lat': float(current_line[4]), 'stop_pos_lon': float(current_line[5])}
+				return stop
+	return None
 
 # MAIN CODE HERE  
 
 # Get the static gtfs feed, dump into folder
-#get_gtfs_feed_static()
-#print(get_route_id_of_route_name("south lake union streetcar"))
-# list_of_routes = get_routes_from_gtfs_feed('gtfs-feed-king-county/routes.txt')
+get_gtfs_feed_static()
+route_name = input("What's the route?  ")
+my_route_id = get_route_id_of_route_name(route_name)
+directions = get_directions_from_route_id(my_route_id)
+print("Select the direction")
+for direction_id, headsign in directions.items():
+    print(f"Direction ID: {direction_id}, Headsign: {headsign}")
+my_dir_id = input("What's the direction ID?  ")    
+my_trips = get_trip_ids_from_route_direction(my_route_id, my_dir_id)
+my_stops = get_stops_from_trip(my_trips[0])
+for stop in my_stops:
+	print(f"Stop ID: {stop['stop_id']}, Stop Name: {stop['stop_name']}, Latitude: {stop['stop_pos_lat']}, Longitude: {stop['stop_pos_lon']}")
+my_stop_id = input("What's the stop ID of your stop?  ")
+print(f"Looking for route_id: {my_route_id} and stop_id: {my_stop_id}")
+
+get_gtfs_rt_my_stop_updates(my_route_id, my_stop_id)
 
 # Bus 8 Seattle Center
 # get_gtfs_rt_my_stop_updates("100275", "2291")
