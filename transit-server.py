@@ -44,13 +44,13 @@ def convert_to_route_id():
         'route_id': converted_id
     }
 
-if __name__ == '__main__':
-    app.run()
+#if __name__ == '__main__':
+#app.run()
 
 
 
 
-if __name__ == '__main__':
-    app.run(FLASK_SERVER_IP, port=FLASK_SERVER_PORT)
+#if __name__ == '__main__':
+#    app.run(FLASK_SERVER_IP, port=FLASK_SERVER_PORT)
 
 #192.168.86.41:4999/api?route_id=100252&stop_id=6190
