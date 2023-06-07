@@ -1,4 +1,4 @@
-Flask
+Flask == 2.2.4 
 Gunicorn
 gtfs-realtime-bindings
 requests
