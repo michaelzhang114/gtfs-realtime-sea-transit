@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from gtfs import get_gtfs_feed_static, get_gtfs_rt_my_stop_updates, get_route_id_of_route_name
+from flask_cors import CORS
 import json
 
 FLASK_SERVER_IP = '192.168.86.42'
 FLASK_SERVER_PORT = 4999
 
 app = Flask(__name__)
+CORS(app)
 
 @app.before_first_request
 def setup():
