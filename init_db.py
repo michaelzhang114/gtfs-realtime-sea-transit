@@ -2,8 +2,8 @@ import psycopg2
 import os
 
 def get_db_connection():
-    conn = psycopg2.connect(os.environ.get("DB_EXT_STRING"))
-    #conn = psycopg2.connect(os.environ.get("DB_INT_STRING"))
+    #conn = psycopg2.connect(os.environ.get("DB_EXT_STRING"))
+    conn = psycopg2.connect(os.environ.get("DB_INT_STRING"))
     return conn
 
 conn = get_db_connection()
