@@ -212,6 +212,67 @@ def delete_user(user_id):
 
 
 
+# CREATE route JSON
+@app.route("/api/route", methods=['POST'])
+def create_route():
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return "Content type is not supported"
+
+    # handle json payload
+    if content_type == 'application/json':
+        data = request.get_json()
+        my_route_id = data['route_id']
+        my_stop_id = data['stop_id']
+        my_user_id = data['user_id']
+
+        conn = get_db_connection()
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute("INSERT INTO routes (route_num, stop_num, user_id) VALUES (%s, %s, %s) RETURNING id;", (my_route_id, my_stop_id, my_user_id))
+                my_id = cursor.fetchone()[0]
+        return {"message": f"Route number {my_route_id} with stop {my_stop_id} created for user {my_user_id}. This record has ID {my_id}"}, 201
+
+    return
+
+# DELETE a route
+@app.route("/api/route/<int:id>", methods=["DELETE"])
+def delete_route(id):
+    conn = get_db_connection()
+    delete_query = """
+        DELETE FROM routes
+        WHERE id = %s;
+    """
+    with conn:
+        with conn.cursor() as cursor:
+            cursor.execute(delete_query, (id,))
+            if cursor.rowcount == 0:
+                return jsonify({"error": f"Route with ID {id} not found."}), 404
+    return jsonify({"message": f"Route with ID {id} deleted."})
+
+# GET all routes
+@app.route("/api/route", methods=["GET"])
+def get_all_routes():
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM routes;")
+            routes = cursor.fetchall()
+            if routes:
+                routes_data = []
+                for r in routes:                    
+                    this_route = {
+                        "id": r[0],
+                        "route_id": r[1],
+                        "stop_id": r[2],
+                        "user_id": r[3]
+                    }
+                    routes_data.append(this_route)                    
+                return jsonify({"routes": routes_data})
+            else:
+                return jsonify({"error": f"Routes not found."}), 404
+
+
 
 
 
