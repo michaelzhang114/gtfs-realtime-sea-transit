@@ -309,8 +309,8 @@ def get_all_routes():
                 for r in routes:
                     this_route = {
                         "id": r[0],
-                        "route_id": r[1],
-                        "stop_id": r[2],
+                        "route_num": r[1],
+                        "stop_num": r[2],
                         "user_name": r[3],
                         "user_email": r[4],
                     }
