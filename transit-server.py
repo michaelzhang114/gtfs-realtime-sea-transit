@@ -256,8 +256,8 @@ def create_route():
     # handle json payload
     if content_type == "application/json":
         data = request.get_json()
-        my_route_id = data["route_id"]
-        my_stop_id = data["stop_id"]
+        my_route_id = data["route_num"]
+        my_stop_id = data["stop_num"]
         my_user_id = data["user_id"]
 
         conn = get_db_connection()
